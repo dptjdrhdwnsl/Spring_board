@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+<context:annotation-config/>
+<!-- commons-dbcp2 -->
+<bean class="org.apache.commons.dbcp2.BasicDataSource" id="basicDataSource" destroy-method="close">
+	<property name="driverClassName" value="oracle.jdbc.OracleDriver"></property>
+	<property name="url" value="jdbc:oracle:thin:@127.0.0.1:1521:xe"></property>
+	<property name="username" value="jboard"></property>
+	<property name="password" value="1234"></property>
+</bean>
+
+<!-- mybatis-spring -->
+<!-- java.lang.NoClassDefFoundError: org/springframework/jdbc/datasource/TransactionAwareDataSourceProxy -->
+<!-- spring-jdbc-4.3.8.RELEASE 라이브러리를 안 넣어주면 상단 에러 발생 -->
+<bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactoryBean">
+	<property name="dataSource" ref="basicDataSource"/>
+	<!-- sql구문이 정의된 xml파일의 위치를 속성으로 설정 -->
+	<property name="mapperLocations">
+		<!-- sql구문이 정의된 xml 파일의 목록을 설정 -->
+		<list>
+			<!-- sql문 적는 곳, 경로는 상대경로 -->
+			<value>classpath:mapper/mapper.xml</value>
+		</list>
+	</property>
+</bean>
+<!-- MyBatis에서 스프링 연동모듈의 핵심 -->
+<!-- SqlSession 인터페이스의 구현체이며 코드에서 SqlSession 인터페이스 인스턴스를 대체하는 역할 -->
+<!-- SqlSession 인터페이스는 데ㅣ터베이스에 대해 SQL 명령어를 실행하기 위해 필요한 모든 메서드를 가지고 있다. -->
+<bean class="org.mybatis.spring.SqlSessionTemplate" id="sqlSessionTemplate">
+	<constructor-arg ref="sqlSessionFactoryBean" />
+</bean>
+<bean class="min.board.dao.BoardDAO" id = "boardDAO">
+		<!-- DAO SqlSession Template 객체명 -->
+		<!-- dao클래스를 Bean으로 설정하고 DAO template 멤버변수에 @Autowired 어노테이션을 적용하던지 아래 코딩을 적어준다.  -->
+		<property name="template" ref = "sqlSessionTemplate"/>
+	</bean>
+
+
+
+</beans>
+
+
